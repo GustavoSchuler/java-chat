@@ -23,6 +23,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private JButton btnConectar;
 	private JLabel lblInfo;
 	private JTextField txtUsuario;
+	private JTextField txtEndereco;
+	private JTextField txtPorta;
 	
 	public TelaPrincipal() {
 		
@@ -39,7 +41,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		ImageIcon imagem = new ImageIcon( getClass().getResource( "images/chat-icon.png" ) );
 		img.setIcon( imagem );
 		
-		JLabel lblUsuario = new JLabel("Usuario:");
+		JLabel lblUsuario = new JLabel("Usuårio:");
 		lblUsuario.setBounds( 25, 200, 200, 20 );
 		
 		container.add( lblUsuario );
@@ -49,12 +51,12 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		container.add( txtUsuario );
 		
-		JLabel lblEndereco = new JLabel("Endereco:");
+		JLabel lblEndereco = new JLabel("Endereço:");
 		lblEndereco.setBounds( 25, 260, 200, 20 );
 		
 		container.add( lblEndereco );
 		
-		JTextField txtEndereco = new JTextField();
+		txtEndereco = new JTextField();
 		txtEndereco.setBounds( 25, 280, 150, 25 );
 		txtEndereco.setText( "localhost" );
 		
@@ -65,7 +67,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		container.add( lblPorta );
 		
-		JTextField txtPorta = new JTextField();
+		txtPorta = new JTextField();
 		txtPorta.setBounds( 180, 280, 90, 25 );
 		txtPorta.setText( "1843" );
 		
@@ -113,9 +115,10 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 				servidor = null;
 				
 			}
+			
 		} else {
 			
-			JOptionPane.showMessageDialog( null, "Digite o Usuario!" );
+			JOptionPane.showMessageDialog( null, "Digite o Usuårio!" );
 			txtUsuario.requestFocusInWindow();
 			
 		}
@@ -126,6 +129,9 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	public void aoIniciarServidor() {
 		
 		lblInfo.setText( "Iniciando servidor..." );
+		txtUsuario.setEnabled( false );
+		txtEndereco.setEnabled( false );
+		txtPorta.setEnabled( false );
 		
 	}
 
@@ -133,6 +139,9 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	public void aoFinalizarServidor() {
 		
 		lblInfo.setText( "Desconectado" );
+		txtUsuario.setEnabled( true );
+		txtEndereco.setEnabled( true );
+		txtPorta.setEnabled( true );
 		
 	}
 
