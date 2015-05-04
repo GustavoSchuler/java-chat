@@ -86,6 +86,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		setResizable( false );
 		setVisible( true );
+		setDefaultCloseOperation( DISPOSE_ON_CLOSE );
 		
 	}
 
