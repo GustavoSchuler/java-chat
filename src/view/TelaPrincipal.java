@@ -5,26 +5,37 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import view.TelaChat;
 
 public class TelaPrincipal extends JFrame implements ActionListener, controller.EventosDoServidorDeSockets, WindowListener {
 	
 	private controller.ServidorDeSockets servidor;
+	private JLabel img;
 	private JButton btnConectar;
+	private JButton btnIniciar;
 	private JLabel lblInfo;
 	private JTextField txtUsuario;
 	private JTextField txtEndereco;
 	private JTextField txtPorta;
+	private Socket socket;
+	private TelaChat tlaChat;
 	
 	public TelaPrincipal() {
 		
@@ -34,14 +45,40 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		Container container = getContentPane();
 		
-		JLabel img = new JLabel();
+		img = new JLabel();
 		container.add( img );
-		img.setBounds( 100, 80, 100, 100);
+		img.setBounds( 100, 50, 100, 100 );
 		
 		ImageIcon imagem = new ImageIcon( getClass().getResource( "images/chat-icon.png" ) );
 		img.setIcon( imagem );
 		
-		JLabel lblUsuario = new JLabel("UsuÃ¥rio:");
+		JButton btImagem = new JButton( "Imagem..." );
+		btImagem.setBounds( 100, 160, 100, 20 );
+		
+		btImagem.addActionListener(
+            new ActionListener(){
+                public void actionPerformed(ActionEvent e){
+                    JFileChooser fc = new JFileChooser();
+                    int res = fc.showOpenDialog(null);
+                    
+                    if(res == JFileChooser.APPROVE_OPTION){
+                        File arquivo = fc.getSelectedFile();  
+                        
+                        String extensao = arquivo.getName().substring(arquivo.getName().lastIndexOf(".")+1).toLowerCase();
+                        	
+                        if(!extensao.equals("jpg") && !extensao.equals("jpeg")){
+                        	JOptionPane.showMessageDialog(null, "Formato de Arquivo inválido.");
+                        }else{
+	                        img.setIcon(new ImageIcon(arquivo.getAbsolutePath()));
+                        }
+                    }
+                }
+            }   
+        );
+		
+		container.add( btImagem );
+		
+		JLabel lblUsuario = new JLabel("Usuário:");
 		lblUsuario.setBounds( 25, 200, 200, 20 );
 		
 		container.add( lblUsuario );
@@ -51,7 +88,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		container.add( txtUsuario );
 		
-		JLabel lblEndereco = new JLabel("EndereÃ§o:");
+		JLabel lblEndereco = new JLabel("Endereço:");
 		lblEndereco.setBounds( 25, 260, 200, 20 );
 		
 		container.add( lblEndereco );
@@ -73,16 +110,77 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		container.add( txtPorta );
 		
-		btnConectar = new JButton("Conectar");
+		btnConectar = new JButton("Login");
 		btnConectar.setBounds( 25, 340, 250, 35 );
 		btnConectar.addActionListener( this );
 		
 		container.add( btnConectar );
 		
+		btnIniciar = new JButton("Iniciar Chat");
+		btnIniciar.setBounds( 25, 380, 250, 35 );
+		btnIniciar.setEnabled( false );
+		btnIniciar.addActionListener( new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				conectar();
+			}
+		} );
+		
+		container.add( btnIniciar );
+		
 		lblInfo = new JLabel();
 		lblInfo.setBounds( 25, 550, 250, 25);
 		
 		container.add( lblInfo );
+		
+		addWindowListener( new WindowListener() {
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				
+				if (servidor != null){
+					servidor.finaliza();
+				}
+				
+			}
+			
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		
 		setResizable( false );
 		setVisible( true );
@@ -99,9 +197,10 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 				
 				try {
 					
-					servidor = new controller.ServidorDeSockets( 1843, this );
+					servidor = new controller.ServidorDeSockets( Integer.parseInt(txtPorta.getText()), this );
 					servidor.start();
 					btnConectar.setText( "Desconectar" );
+					btnIniciar.setEnabled( true );
 					
 				} catch (IOException e1) {
 					
@@ -113,13 +212,14 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 				
 				servidor.finaliza();
 				btnConectar.setText( "Conectar" );
+				btnIniciar.setEnabled( false );
 				servidor = null;
 				
 			}
 			
 		} else {
 			
-			JOptionPane.showMessageDialog( null, "Digite o UsuÃ¥rio!" );
+			JOptionPane.showMessageDialog( null, "Digite o Usuário!" );
 			txtUsuario.requestFocusInWindow();
 			
 		}
@@ -127,17 +227,18 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	}
 
 	@Override
-	public void aoIniciarServidor() {
+	public void aoIniciarServidor() throws JSONException {
 		
-		lblInfo.setText( "Iniciando servidor..." );
+		lblInfo.setText( "Servidor iniciado...  Aguardando conexões" );
 		txtUsuario.setEnabled( false );
 		txtEndereco.setEnabled( false );
-		txtPorta.setEnabled( false );
+		txtPorta.setEnabled( false );		
 		
 	}
+	
 
 	@Override
-	public void aoFinalizarServidor() {
+	public void aoFinalizarServidor() throws JSONException {
 		
 		lblInfo.setText( "Desconectado" );
 		txtUsuario.setEnabled( true );
@@ -147,16 +248,16 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	}
 
 	@Override
-	public void aoReceberSocket(Socket s) {
+	public void aoReceberSocket(Socket s) throws JSONException {
 		
 		lblInfo.setText( "Conectando ao servidor..." );
 		iniciaComunicacao( s );
 		
 	}
 
-	private void iniciaComunicacao(Socket s) {
-		
-		new TelaChat( s, "Servidor" );
+	private void iniciaComunicacao(Socket s) throws JSONException {
+		tlaChat = new TelaChat( s, txtUsuario.getText() );
+		this.socket = s;
 		lblInfo.setText( "Conectado" );
 		
 	}
@@ -193,5 +294,34 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 	@Override
 	public void windowOpened(WindowEvent arg0) {}
+	
+	
+	protected void conectar() {
+
+		String end = txtEndereco.getText().trim();
+		String prt = txtPorta.getText().trim();
+		
+		if( end.length() == 0 ) {
+			JOptionPane.showMessageDialog( this, "Defina o endereço para conexão" );
+			txtEndereco.requestFocusInWindow();
+			return;
+		}
+		
+		try {
+			int nrPrt = Integer.parseInt( prt );
+
+			try {
+				socket = new Socket( end, nrPrt );
+				tlaChat.enviaSolicitacao();
+			} catch( Exception e ) {
+				JOptionPane.showMessageDialog( this, "Erro: " + e.getMessage()  );
+			}
+		} catch( Exception e ) {
+			JOptionPane.showMessageDialog( this, "Defina o número da porta para conexão" );
+			txtPorta.requestFocusInWindow();
+			return;
+		}
+	}
+	
 	
 }

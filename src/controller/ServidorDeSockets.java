@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.json.JSONException;
+
 import controller.EventosDoServidorDeSockets;
 
 public class ServidorDeSockets extends Thread {
@@ -26,31 +28,47 @@ public class ServidorDeSockets extends Thread {
 	@Override
 	public void run() {
 		
-		System.out.println( "Iniciando servi√ßo de sockets" );
-		eventos.aoIniciarServidor();
+		System.out.println( "Iniciando serviÁo de sockets" );
+		try {
+			eventos.aoIniciarServidor();
+		} catch (JSONException e1) {
+			
+		}
 		
 		continua = true;
 		while( continua ) {
 
 			try {
-				System.out.println( "Servidor de sockets aguardando conex√µes..." );
+				System.out.println( "Servidor de sockets aguardando conexıes..." );
 				final Socket s = getSocket();
 				
 				new Thread() {
 					public void run() {
-						eventos.aoReceberSocket(s);
+						try {
+							eventos.aoReceberSocket(s);
+						} catch (JSONException e) {
+							
+						}
 					};
 				}.start();
 				
 			} catch (IOException e) {
 				if( continua ) {
-					eventos.reportDeErro(e);
+					try {
+						eventos.reportDeErro(e);
+					} catch (JSONException e1) {
+						
+					}
 				}
 			}
 		}
 
-		System.out.println( "Finalizando servi√ßo de sockets" );
-		eventos.aoFinalizarServidor();
+		System.out.println( "Finalizando serviÁo de sockets" );
+		try {
+			eventos.aoFinalizarServidor();
+		} catch (JSONException e) {
+
+		}
 	}
 	
 	public void finaliza() {
