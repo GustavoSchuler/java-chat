@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +37,9 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private JTextField txtEndereco;
 	private JTextField txtPorta;
 	private Socket socket;
-	private Recebedor recebedor;
+	private TelaChat tlachat;
+	//private Recebedor recebedor;
+	private String contato;
 	
 	public TelaPrincipal() {
 		
@@ -67,7 +71,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
                         String extensao = arquivo.getName().substring(arquivo.getName().lastIndexOf(".")+1).toLowerCase();
                         	
                         if(!extensao.equals("jpg") && !extensao.equals("jpeg")){
-                        	JOptionPane.showMessageDialog(null, "Formato de Arquivo inválido.");
+                        	JOptionPane.showMessageDialog(null, "Formato de Arquivo inválido, selecione um arquivo JPG.");
                         }else{
 	                        img.setIcon(new ImageIcon(arquivo.getAbsolutePath()));
                         }
@@ -95,7 +99,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		txtEndereco = new JTextField();
 		txtEndereco.setBounds( 25, 280, 150, 25 );
-		txtEndereco.setText( "localhost" );
+		txtEndereco.setText( "192.168.25.6" );
 		
 		container.add( txtEndereco );
 		
@@ -186,8 +190,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		setVisible( true );
 		setDefaultCloseOperation( DISPOSE_ON_CLOSE );
 		
-		recebedor = new Recebedor();
-		recebedor.start();
+		//recebedor = new Recebedor();
+		//recebedor.start();
 		
 	}
 
@@ -260,7 +264,6 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 	private void iniciaComunicacao(Socket s) throws JSONException {
 		this.socket = s;
-		new TelaChat( socket, txtUsuario.getText() );    //TESTE
 		lblInfo.setText( "Conectado" );
 		
 	}
@@ -298,52 +301,15 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	@Override
 	public void windowOpened(WindowEvent arg0) {}
 	
-	private void enviaSolicitacao() throws JSONException {
-		
-		JSONObject solicitacao = new JSONObject();
-		
-		solicitacao.put("cod", 1);
-		solicitacao.put("nome", txtUsuario.getText());
-		solicitacao.put("img", "imgAqui");
-		
-		enviaPeloSocket( solicitacao.toString() );
-		
-		lblInfo.setText( "Solicitação enviada" );
-		
-	}
 	
-	private void confirmaConexao() throws JSONException {
-		
-		JSONObject confirmacao = new JSONObject();
-		
-		confirmacao.put("cod", 0);
-		confirmacao.put("nome", txtUsuario.getText());
-		confirmacao.put("img", "imgAqui");
-		
-		enviaPeloSocket( confirmacao.toString() );
-		
-	}
-	
-	private void negaConexao() throws JSONException {
-		
-		JSONObject negacao = new JSONObject();
-		
-		negacao.put("cod", -1);
-		
-		enviaPeloSocket( negacao.toString() );
-		
-	}
 	
 	private void enviaPeloSocket( String txt ) {
 		
 		try {
 			OutputStream os = socket.getOutputStream();
-			
-			byte[] enviar = txt.getBytes();
-			
-			os.write( enviar.length );
-			os.write( enviar );
-			os.flush();
+			DataOutputStream dos = new DataOutputStream( os );
+
+			dos.writeUTF( txt );
 			
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível enviar sua mensagem: " + e.getMessage() );
@@ -366,7 +332,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 			try {
 				socket = new Socket( end, nrPrt );
-				enviaSolicitacao();
+				tlachat = new TelaChat( socket, txtUsuario.getText(), contato );
+				tlachat.enviaSolicitacao();
 			} catch( Exception e ) {
 				JOptionPane.showMessageDialog( this, "Erro: " + e.getMessage()  );
 			}
@@ -376,7 +343,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 			return;
 		}
 	}
-	
+	/*
 	private class Recebedor extends Thread {
 
 		@Override
@@ -384,17 +351,12 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 			
 			try {
 				InputStream is = socket.getInputStream();
-				
+				DataInputStream dis = new DataInputStream( is );
+
 				while( isVisible() ) {
 					
-					int tam = is.read();
-					
-					if( tam > 0 ) {
-						byte[] buffer = new byte[ tam ];
-						
-						is.read( buffer );
-						
-						String msg = new String( buffer );
+					String msg = dis.readUTF();
+					if( msg != null ) {
 						
 						JSONObject objRecebido = new JSONObject( msg );
 
@@ -409,7 +371,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 						//Conexão aceita
 						else if (cod == 0) {
 							
-							new TelaChat( socket, txtUsuario.getText() );
+							new TelaChat( socket, txtUsuario.getText(), objRecebido.getString( "nome" ) );
 							
 						}
 						//Solicitação de conexão.
@@ -426,8 +388,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 					        		JOptionPane.showMessageDialog(null, "Digite o nome de usuário!");
 					        		txtUsuario.requestFocusInWindow();
 					        	}else{
+					        		contato = objRecebido.getString( "nome" );
 									confirmaConexao();
-									//areaChat.setText( areaChat.getText() + "\n Conectado com: " + msg.substring(3) );
 					        	}
 					        }
 					        else {
@@ -472,5 +434,5 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 			}
 		}
 	}
-	
+	*/
 }
