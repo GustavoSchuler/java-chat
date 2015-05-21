@@ -35,7 +35,6 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private JTextField txtEndereco;
 	private JTextField txtPorta;
 	private Socket socket;
-	private TelaChat tlaChat;
 	private Recebedor recebedor;
 	
 	public TelaPrincipal() {
@@ -260,8 +259,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	}
 
 	private void iniciaComunicacao(Socket s) throws JSONException {
-		tlaChat = new TelaChat( s, txtUsuario.getText() );
 		this.socket = s;
+		new TelaChat( socket, txtUsuario.getText() );    //TESTE
 		lblInfo.setText( "Conectado" );
 		
 	}
@@ -308,6 +307,8 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		solicitacao.put("img", "imgAqui");
 		
 		enviaPeloSocket( solicitacao.toString() );
+		
+		lblInfo.setText( "Solicitação enviada" );
 		
 	}
 	
@@ -399,8 +400,21 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 						int cod = objRecebido.getInt( "cod" );
 						
+						//Conexão rejeitada
+						if (cod == -1){
+							
+							JOptionPane.showMessageDialog( null , "O usuário negou a conexão." );
+							
+						}
+						//Conexão aceita
+						else if (cod == 0) {
+							
+							new TelaChat( socket, txtUsuario.getText() );
+							
+						}
 						//Solicitação de conexão.
-						if (cod == 1){
+						else if (cod == 1){
+							
 							int n = JOptionPane.showConfirmDialog(
 					            null,
 					            "O usuário " + objRecebido.getString( "nome" ) + " deseja iniciar uma conversa.",
@@ -410,7 +424,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 					        if(n == 0){
 					        	if( txtUsuario.getText().equals( "" ) ){
 					        		JOptionPane.showMessageDialog(null, "Digite o nome de usuário!");
-					        		//txtUsuario.requestFocusInWindow();
+					        		txtUsuario.requestFocusInWindow();
 					        	}else{
 									confirmaConexao();
 									//areaChat.setText( areaChat.getText() + "\n Conectado com: " + msg.substring(3) );
@@ -419,16 +433,38 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 					        else {
 					            negaConexao();
 					        }
+					        
 						}
-						//Conexão aceita
-						else if (cod == 0) {
+						//Mensagem.
+						else if (cod == 2){
 							
 						}
-						//Conexão rejeitada
-						else if (cod == -1){
-							JOptionPane.showMessageDialog( null , "O usuário negou a conexão." );
+						//Logout.
+						else if (cod == 3){
+							
+							lblInfo.setText( "Desconectado" );
+							
 						}
-						
+						//Requisição de envio de arquivo.
+						else if (cod == 4){
+							
+						}
+						//Envio de arquivo aceito.
+						else if (cod == 5){
+							
+						}
+						//Envio de arquivo recusado.
+						else if (cod == 6){
+							
+						}
+						//Sucesso no envio de arquivo.
+						else if (cod == 7){
+							
+						}
+						//Erro no envio de arquivo.
+						else if (cod == 8){
+							
+						}
 					}
 				}
 			} catch (IOException | JSONException e) {
