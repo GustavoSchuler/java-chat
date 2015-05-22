@@ -387,9 +387,9 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							lblContato.setText( contato );
 							
 							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-							ImageIO.write(imag, "jpg", new File("C:/temp","snap.jpg"));
+							ImageIO.write(imag, "jpg", new File("C:/temp", contato + ".jpg"));
 							
-							fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/snap.jpg" ) )  ); 
+							fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/" + contato + ".jpg" ) )  ); 
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
 							
@@ -406,16 +406,15 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        if(n == 0){
 					        	if( usuario.equals( "" ) ){
 					        		JOptionPane.showMessageDialog(null, "Digite o nome de usuário!");
-					        		//txtUsuario.requestFocusInWindow();
 					        	}else{
 					        		setVisible( true );
 					        		contato = objRecebido.getString( "nome" );
 					        		lblContato.setText( contato );
 					        		
 					        		BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-									ImageIO.write(imag, "jpg", new File("C:/temp","snap.jpg"));
+									ImageIO.write(imag, "jpg", new File("C:/temp", contato + ".jpg"));
 									
-									fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/snap.jpg" ) )  );
+									fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/" + contato + ".jpg" ) )  );
 									
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
@@ -587,4 +586,9 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		
 	}
 	
+	/*
+	public static void main(String[] args) {
+		new TelaChat(new Socket(), "teste", new JLabel(""));
+	}
+	*/
 }
