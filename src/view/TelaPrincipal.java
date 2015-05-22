@@ -261,7 +261,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private void iniciaComunicacao(Socket s) throws JSONException {
 		this.socket = s;
 		if (tlachat == null){
-			tlachat = new TelaChat( socket, txtUsuario.getText() );
+			tlachat = new TelaChat( socket, txtUsuario.getText(), img );
 		}
 		lblInfo.setText( "Conectado" );
 		
@@ -318,7 +318,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 			try {
 				socket = new Socket( end, nrPrt );
 				if (tlachat == null){
-					tlachat = new TelaChat( socket, txtUsuario.getText() );
+					tlachat = new TelaChat( socket, txtUsuario.getText(), img );
 					tlachat.enviaSolicitacao();
 				}
 			} catch( Exception e ) {

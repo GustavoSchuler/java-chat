@@ -7,6 +7,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -17,9 +19,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.CodingErrorAction;
 
 import javafx.stage.FileChooser;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,7 +38,7 @@ import org.json.JSONObject;
 
 import controller.EventosDoServidorDeSockets;
 
-public class TelaChat extends JFrame implements WindowListener, controller.EventosDoServidorDeSockets {
+public class TelaChat extends JFrame implements WindowListener, controller.EventosDoServidorDeSockets, controller.IFileDownloadHandler {
 	
 	private Socket socket;
 	private String usuario, contato;
@@ -48,7 +52,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	private ServerSocket serverSoketArquivo;
 	private boolean continua;
 	
-	public TelaChat(Socket s, String titulo) {
+	public TelaChat(Socket s, String titulo, JLabel foto) {
 		
 		this.socket = s;
 		this.usuario = titulo;
@@ -80,7 +84,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		
 		fotoUsuario = new JLabel();
 		fotoUsuario.setBounds( 15, 310, 120, 120 );
-		fotoUsuario.setIcon( new ImageIcon( getClass().getResource( fotoPadrao ) ) );
+		fotoUsuario.setIcon( foto.getIcon() );
 		fotoUsuario.setHorizontalAlignment( fotoUsuario.CENTER );
 		
 		container.add( fotoUsuario );
@@ -208,13 +212,13 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 	
-	void enviaSolicitacao() throws JSONException {
+	void enviaSolicitacao() throws JSONException, IOException {
 		
 		JSONObject solicitacao = new JSONObject();
 		
 		solicitacao.put("cod", 1);
 		solicitacao.put("nome", usuario);
-		solicitacao.put("img", "imgAqui");
+		solicitacao.put("img", controller.ImagemEncoderHelper.encodeImage( fotoUsuario ));
 		
 		enviaPeloSocket( solicitacao.toString() );
 		
@@ -222,13 +226,13 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		
 	}
 	
-	private void confirmaConexao() throws JSONException {
+	private void confirmaConexao() throws JSONException, IOException {
 		
 		JSONObject confirmacao = new JSONObject();
 		
 		confirmacao.put("cod", 0);
 		confirmacao.put("nome", usuario);
-		confirmacao.put("img", "imgAqui");
+		confirmacao.put("img", controller.ImagemEncoderHelper.encodeImage( fotoUsuario ));
 		
 		enviaPeloSocket( confirmacao.toString() );
 		
@@ -317,6 +321,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						fis.read(bFile);
 						fis.close();
 
+						
 						FileOutputStream fileOuputStream = 
 						new FileOutputStream(tmpdir + nomeArquivo); 
 						fileOuputStream.write(bFile);
@@ -380,6 +385,11 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							
 							contato = objRecebido.getString( "nome" );
 							lblContato.setText( contato );
+							
+							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
+							ImageIO.write(imag, "jpg", new File("C:/temp","snap.jpg"));
+							
+							fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/snap.jpg" ) )  ); 
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
 							
@@ -401,6 +411,12 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		setVisible( true );
 					        		contato = objRecebido.getString( "nome" );
 					        		lblContato.setText( contato );
+					        		
+					        		BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
+									ImageIO.write(imag, "jpg", new File("C:/temp","snap.jpg"));
+									
+									fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/snap.jpg" ) )  );
+									
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
 					        		repaint();
@@ -543,6 +559,30 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 
 	@Override
 	public void reportDeErro(IOException e) throws JSONException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onFinishSendFile(String fileName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onFinishReceiveFile(String fileName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onErrorSendFile(Exception e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onErrorReceiveFile(Exception e) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -1,4 +1,4 @@
-package feevale.chat;
+package controller;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
