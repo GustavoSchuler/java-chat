@@ -312,20 +312,17 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					byte[] bFile = new byte[(int) arquivo.length()];
 					 
 					try {
-						// Convertendo arquivo em array de bytes
-						// acho que aqui é a parte que envia
+
 						fis = new FileInputStream(arquivo);
 						fis.read(bFile);
 						fis.close();
 
-						// Convertendo array de bytes em arquivo
-						// acho que aqui é a parte que recebe
 						FileOutputStream fileOuputStream = 
 						new FileOutputStream(tmpdir + nomeArquivo); 
 						fileOuputStream.write(bFile);
 						fileOuputStream.close();
 
-						System.out.println("enviar cod 7 para dizer que deu certo");
+						System.out.println("enviar cod 7 - confirma");
 						}catch(Exception e){
 							e.printStackTrace();
 						}
@@ -381,8 +378,11 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						//Conexão aceita
 						else if (cod == 0) {
 							
+							contato = objRecebido.getString( "nome" );
+							lblContato.setText( contato );
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
+							
 						}
 						//Solicitação de conexão.
 						else if (cod == 1){
@@ -400,6 +400,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        	}else{
 					        		setVisible( true );
 					        		contato = objRecebido.getString( "nome" );
+					        		lblContato.setText( contato );
+					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
 					        		repaint();
 									confirmaConexao();
