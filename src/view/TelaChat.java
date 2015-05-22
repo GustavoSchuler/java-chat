@@ -10,9 +10,12 @@ import java.awt.event.WindowListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 import javafx.stage.FileChooser;
@@ -41,12 +44,14 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	private JLabel fotoContato, lblContato, fotoUsuario, lblUsuario;
 	private JFileChooser fc;
 	private Recebedor recebedor;
+	private controller.ServidorDeSockets servidorArquivo;
+	private ServerSocket serverSoketArquivo;
+	private boolean continua;
 	
-	public TelaChat(Socket s, String titulo, String contato) {
+	public TelaChat(Socket s, String titulo) {
 		
 		this.socket = s;
 		this.usuario = titulo;
-		this.contato = contato;
 		
 		setTitle( "Chat v1.0 - " + titulo );
 		setBounds( 400, 100, 600, 500 );
@@ -213,7 +218,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		
 		enviaPeloSocket( solicitacao.toString() );
 		
-		areaChat.setText( areaChat.getText() + "/n Solicitação enviada" );
+		areaChat.setText( areaChat.getText() + "\n Solicitação enviada" );
 		
 	}
 	
@@ -252,6 +257,103 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 	
+	private void aceitaEnvioArquivo(){
+		try {
+			OutputStream os = socket.getOutputStream();
+			DataOutputStream dos = new DataOutputStream( os );
+
+			int nroPorta = 64000;
+			
+			JSONObject transacao = new JSONObject();
+			transacao.put( "cod", 5 );
+			transacao.put( "porta", nroPorta );
+			
+			dos.writeUTF( transacao.toString() );
+			
+			
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
+		}
+	}
+	
+	private void recusaEnvioArquivo(){
+		try {
+			OutputStream os = socket.getOutputStream();
+			DataOutputStream dos = new DataOutputStream( os );
+
+			JSONObject transacao = new JSONObject();
+			transacao.put( "cod", 6 );
+			
+			dos.writeUTF( transacao.toString() );
+			
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
+		}
+	}
+		
+	
+	private void iniciaServidorArquivo( int porta ){
+			
+			if( servidorArquivo == null ) {
+				try {
+					
+					servidorArquivo = new controller.ServidorDeSockets( porta, this );
+					servidorArquivo.start();
+					
+					FileInputStream fis = null;
+					
+					File arquivo = fc.getSelectedFile();
+					String nomeArquivo = arquivo.getName();
+					String tmpdir = System.getProperty("java.io.tmpdir");
+					
+					System.out.println("nome do arquivo: " + nomeArquivo);
+					System.out.println("nome do arquivo: " + tmpdir);
+					
+					byte[] bFile = new byte[(int) arquivo.length()];
+					 
+					try {
+						// Convertendo arquivo em array de bytes
+						// acho que aqui é a parte que envia
+						fis = new FileInputStream(arquivo);
+						fis.read(bFile);
+						fis.close();
+
+						// Convertendo array de bytes em arquivo
+						// acho que aqui é a parte que recebe
+						FileOutputStream fileOuputStream = 
+						new FileOutputStream(tmpdir + nomeArquivo); 
+						fileOuputStream.write(bFile);
+						fileOuputStream.close();
+
+						System.out.println("enviar cod 7 para dizer que deu certo");
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					
+					
+	
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else {
+				
+				servidorArquivo.finaliza();
+				servidorArquivo = null;
+	
+			}
+			
+		}
+	
+	public void finalizaServidorArquivo() {
+			continua = false;
+			try {
+				serverSoketArquivo.close();
+			} catch (IOException e) {
+			}
+	}
+	
 	private class Recebedor extends Thread {
 
 		@Override
@@ -279,7 +381,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						//Conexão aceita
 						else if (cod == 0) {
 							
-							//new TelaChat( socket, usuario, objRecebido.getString( "nome" ) );
+							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
 						}
 						//Solicitação de conexão.
@@ -296,6 +398,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		JOptionPane.showMessageDialog(null, "Digite o nome de usuário!");
 					        		//txtUsuario.requestFocusInWindow();
 					        	}else{
+					        		setVisible( true );
 					        		contato = objRecebido.getString( "nome" );
 					        		btEnviar.setEnabled( true );
 					        		repaint();
@@ -324,7 +427,16 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						}
 						//Requisição de envio de arquivo.
 						else if (cod == 4){
-							
+							areaChat.setText( areaChat.getText() + "\n" + contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)");
+							if (JOptionPane.showConfirmDialog(null, contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)", "Solicitação de envio de arquivo",
+								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+								aceitaEnvioArquivo();
+								areaChat.setText( areaChat.getText() + "\nVocê aceitou o envio de arquivo.");
+								
+							} else {
+							    recusaEnvioArquivo();
+								areaChat.setText( areaChat.getText() + "\nVocê recusou o envio de arquivo.");
+							}
 						}
 						//Envio de arquivo aceito.
 						else if (cod == 5){
@@ -360,7 +472,17 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
+		
+		JSONObject logout = new JSONObject();
+		
+		try {
+			
+			logout.put( "cod", 3);
+			enviaPeloSocket( logout.toString() );
+			
+		} catch (JSONException e1) {
+			
+		}
 		
 	}
 

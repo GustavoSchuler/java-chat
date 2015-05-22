@@ -38,7 +38,6 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private JTextField txtPorta;
 	private Socket socket;
 	private TelaChat tlachat;
-	//private Recebedor recebedor;
 	private String contato;
 	
 	public TelaPrincipal() {
@@ -190,9 +189,6 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		setVisible( true );
 		setDefaultCloseOperation( DISPOSE_ON_CLOSE );
 		
-		//recebedor = new Recebedor();
-		//recebedor.start();
-		
 	}
 
 	@Override
@@ -264,6 +260,9 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 	private void iniciaComunicacao(Socket s) throws JSONException {
 		this.socket = s;
+		if (tlachat == null){
+			tlachat = new TelaChat( socket, txtUsuario.getText() );
+		}
 		lblInfo.setText( "Conectado" );
 		
 	}
@@ -302,20 +301,6 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	public void windowOpened(WindowEvent arg0) {}
 	
 	
-	
-	private void enviaPeloSocket( String txt ) {
-		
-		try {
-			OutputStream os = socket.getOutputStream();
-			DataOutputStream dos = new DataOutputStream( os );
-
-			dos.writeUTF( txt );
-			
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog( this, "Não foi possível enviar sua mensagem: " + e.getMessage() );
-		}
-	}
-	
 	protected void conectar() {
 
 		String end = txtEndereco.getText().trim();
@@ -332,8 +317,10 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 
 			try {
 				socket = new Socket( end, nrPrt );
-				tlachat = new TelaChat( socket, txtUsuario.getText(), contato );
-				tlachat.enviaSolicitacao();
+				if (tlachat == null){
+					tlachat = new TelaChat( socket, txtUsuario.getText() );
+					tlachat.enviaSolicitacao();
+				}
 			} catch( Exception e ) {
 				JOptionPane.showMessageDialog( this, "Erro: " + e.getMessage()  );
 			}
@@ -343,96 +330,5 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 			return;
 		}
 	}
-	/*
-	private class Recebedor extends Thread {
 
-		@Override
-		public void run() {
-			
-			try {
-				InputStream is = socket.getInputStream();
-				DataInputStream dis = new DataInputStream( is );
-
-				while( isVisible() ) {
-					
-					String msg = dis.readUTF();
-					if( msg != null ) {
-						
-						JSONObject objRecebido = new JSONObject( msg );
-
-						int cod = objRecebido.getInt( "cod" );
-						
-						//Conexão rejeitada
-						if (cod == -1){
-							
-							JOptionPane.showMessageDialog( null , "O usuário negou a conexão." );
-							
-						}
-						//Conexão aceita
-						else if (cod == 0) {
-							
-							new TelaChat( socket, txtUsuario.getText(), objRecebido.getString( "nome" ) );
-							
-						}
-						//Solicitação de conexão.
-						else if (cod == 1){
-							
-							int n = JOptionPane.showConfirmDialog(
-					            null,
-					            "O usuário " + objRecebido.getString( "nome" ) + " deseja iniciar uma conversa.",
-					            "Solicitação de conexão",
-					            JOptionPane.YES_NO_OPTION);
-
-					        if(n == 0){
-					        	if( txtUsuario.getText().equals( "" ) ){
-					        		JOptionPane.showMessageDialog(null, "Digite o nome de usuário!");
-					        		txtUsuario.requestFocusInWindow();
-					        	}else{
-					        		contato = objRecebido.getString( "nome" );
-									confirmaConexao();
-					        	}
-					        }
-					        else {
-					            negaConexao();
-					        }
-					        
-						}
-						//Mensagem.
-						else if (cod == 2){
-							
-						}
-						//Logout.
-						else if (cod == 3){
-							
-							lblInfo.setText( "Desconectado" );
-							
-						}
-						//Requisição de envio de arquivo.
-						else if (cod == 4){
-							
-						}
-						//Envio de arquivo aceito.
-						else if (cod == 5){
-							
-						}
-						//Envio de arquivo recusado.
-						else if (cod == 6){
-							
-						}
-						//Sucesso no envio de arquivo.
-						else if (cod == 7){
-							
-						}
-						//Erro no envio de arquivo.
-						else if (cod == 8){
-							
-						}
-					}
-				}
-			} catch (IOException | JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	*/
 }
