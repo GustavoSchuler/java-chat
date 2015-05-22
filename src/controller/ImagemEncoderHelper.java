@@ -34,7 +34,7 @@ public class ImagemEncoderHelper {
     public static String encodeImage(JLabel label) throws IOException {
     	
     	Icon icon = label.getIcon();
-    	BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+    	BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
     	Graphics2D g2d = img.createGraphics();
     	icon.paintIcon(null, g2d, 0, 0);
     	g2d.dispose();
