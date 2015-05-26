@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Container;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -116,8 +117,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		    @Override
 		    public void keyReleased(KeyEvent e) {}
 		});
-		
-		getContentPane().add( txsp );
+
 		
 		container.add( txsp );
 		
@@ -387,11 +387,20 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							lblContato.setText( contato );
 							
 							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-							ImageIO.write(imag, "jpg", new File("C:/temp", contato + ".jpg"));
+							ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 							
-							fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/" + contato + ".jpg" ) )  ); 
+							//VER O QUE DÁ PARA FAZER PARA CARREGAR A IMAGEM
+							File imagem = new File( "C:/temp/snap.jpg" );
+							BufferedImage img = ImageIO.read( imagem );
+							Graphics2D g = img.createGraphics();
+					    	g.dispose();
+
+					    	
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
+							
+			        		fotoContato.setIcon(  new ImageIcon( img ) );
+							repaint();
 							
 						}
 						//Solicitação de conexão.
@@ -412,12 +421,13 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		lblContato.setText( contato );
 					        		
 					        		BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-									ImageIO.write(imag, "jpg", new File("C:/temp", contato + ".jpg"));
-									
-									fotoContato.setIcon(  new ImageIcon( getClass().getResource( "C:/temp/" + contato + ".jpg" ) )  );
+									ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 									
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
+					        		
+					        		File imagem = new File( "C:/temp/snap.jpg" );
+					        		fotoContato.setIcon(  new ImageIcon( getClass().getResource( imagem.getAbsolutePath() ) )  );
 					        		repaint();
 									confirmaConexao();
 					        	}
