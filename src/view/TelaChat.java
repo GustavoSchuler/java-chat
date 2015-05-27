@@ -388,18 +388,11 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							
 							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
 							ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
-							
-							//VER O QUE DÁ PARA FAZER PARA CARREGAR A IMAGEM
-							File imagem = new File( "C:/temp/snap.jpg" );
-							BufferedImage img = ImageIO.read( imagem );
-							Graphics2D g = img.createGraphics();
-					    	g.dispose();
 
-					    	
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
 							
-			        		fotoContato.setIcon(  new ImageIcon( img ) );
+			        		fotoContato.setIcon(  new ImageIcon( imag ) );
 							repaint();
 							
 						}
@@ -426,8 +419,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
 					        		
-					        		File imagem = new File( "C:/temp/snap.jpg" );
-					        		fotoContato.setIcon(  new ImageIcon( getClass().getResource( imagem.getAbsolutePath() ) )  );
+					        		fotoContato.setIcon(  new ImageIcon( imag )  );
 					        		repaint();
 									confirmaConexao();
 					        	}
