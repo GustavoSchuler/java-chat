@@ -387,7 +387,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							lblContato.setText( contato );
 							
 							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-							ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
+							//ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
 							btEnviar.setEnabled( true );
@@ -414,7 +414,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		lblContato.setText( contato );
 					        		
 					        		BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
-									ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
+									//ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 									
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
 					        		btEnviar.setEnabled( true );
