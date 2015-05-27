@@ -289,6 +289,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			transacao.put( "cod", 6 );
 			
 			dos.writeUTF( transacao.toString() );
+
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
@@ -386,7 +387,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							contato = objRecebido.getString( "nome" );
 							lblContato.setText( contato );
 							
-							BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
+							BufferedImage imag = ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
 							//ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 
 							areaChat.setText( areaChat.getText() + "\n " + contato + " aceitou a solicitação de conexão." );
@@ -413,7 +414,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 					        		contato = objRecebido.getString( "nome" );
 					        		lblContato.setText( contato );
 					        		
-					        		BufferedImage imag=ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
+					        		BufferedImage imag = ImageIO.read(new ByteArrayInputStream(controller.ImagemEncoderHelper.decodeImage( objRecebido.getString( "img" ) )));
 									//ImageIO.write(imag, "jpg", new File("C:/temp/", "snap.jpg"));
 									
 					        		areaChat.setText( areaChat.getText() + "\n Conectado com " + contato + "." );
@@ -460,17 +461,27 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						//Envio de arquivo aceito.
 						else if (cod == 5){
 							
+							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
+							//recebe o número da porta e envia o arquivo
+							
 						}
 						//Envio de arquivo recusado.
 						else if (cod == 6){
+							
+							areaChat.setText( areaChat.getText() + "\n " + contato + " não aceitou sua solicitação de envio de arquivo." );
 							
 						}
 						//Sucesso no envio de arquivo.
 						else if (cod == 7){
 							
+							areaChat.setText( areaChat.getText() + "\n Arquivo enviado." );
+							
 						}
 						//Erro no envio de arquivo.
 						else if (cod == 8){
+							
+							areaChat.setText( areaChat.getText() + "\n Ocorreu um erro no envio do arquivo." );
+							//Ver o que fazer para enviar novamente.
 							
 						}
 					}
