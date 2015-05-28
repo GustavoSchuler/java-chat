@@ -84,7 +84,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		Container container = getContentPane();
 		
 		fotoContato = new JLabel();
-		fotoContato.setBounds( 15, 25, 120, 120 );
+		fotoContato.setBounds( 15, 25, 100, 100 );
 		fotoContato.setIcon( new ImageIcon( getClass().getResource( fotoPadrao ) ) );
 		fotoContato.setHorizontalAlignment( fotoContato.CENTER );
 		
@@ -103,7 +103,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		container.add( tasp );
 		
 		fotoUsuario = new JLabel();
-		fotoUsuario.setBounds( 15, 310, 120, 120 );
+		fotoUsuario.setBounds( 15, 310, 100, 100 );
 		fotoUsuario.setIcon( foto.getIcon() );
 		fotoUsuario.setHorizontalAlignment( fotoUsuario.CENTER );
 		
