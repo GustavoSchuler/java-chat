@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import javax.swing.JOptionPane;
 
 public class FileSender extends Thread {
 

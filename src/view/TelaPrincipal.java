@@ -5,16 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.swing.ImageIcon;
@@ -26,7 +18,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import view.TelaChat;
 
@@ -41,7 +32,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 	private JTextField txtEndereco;
 	private JTextField txtPorta;
 	private Socket socket;
-	private TelaChat tlachat;
+	public static TelaChat tlachat;
 	private String contato;
 	
 	public TelaPrincipal() {

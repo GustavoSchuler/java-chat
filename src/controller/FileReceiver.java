@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import javax.swing.JOptionPane;
 
 public class FileReceiver extends Thread {
 

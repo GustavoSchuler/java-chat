@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.Container;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -13,16 +12,11 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.CodingErrorAction;
-
-import javafx.stage.FileChooser;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -37,26 +31,6 @@ import javax.swing.JTextArea;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import controller.EventosDoServidorDeSockets;
-
-/*
- No seu form de chat, implemente a interface IFileDownloadHandler.java.
-
-Utilize a thread FileSender.java para enviar um arquivo.
-
-- hostAddress: o endereço do novo socket de envio de arquivo.
-- port: a porta do novo socket de envio de arquivo.
-- filePathToSend: o caminho do arquivo a ser enviado.
-- fileDownloadHandler: o form que implementou ``IFileDownloadHandler.java``
-
-Utilize a thread FileReceiver.java para receber um arquivo.
-
-- socket: o novo socket para recebimento do arquivo.
-- fileSize: o tamanho do arquivo que está sendo enviado.
-- filePathToSave: o caminho onde deve salvar o arquivo.
-- fileDonwloadHandler: o form que implementou ``IFileDownloadHandler.java``
-
- */
 
 public class TelaChat extends JFrame implements WindowListener, controller.EventosDoServidorDeSockets, controller.IFileDownloadHandler {
 	
@@ -68,9 +42,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	private JLabel fotoContato, lblContato, fotoUsuario, lblUsuario;
 	private JFileChooser fc;
 	private Recebedor recebedor;
-	private controller.ServidorDeSockets servidorArquivo;
-	private ServerSocket serverSoketArquivo;
-	private boolean continua;
+	private File arquivo;
 	
 	public TelaChat(Socket s, String titulo, JLabel foto) {
 		
@@ -280,7 +252,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 	
-	private void aceitaEnvioArquivo(){
+	private void aceitaEnvioArquivo(int tamanho){
 
 		try {
 			OutputStream os = socket.getOutputStream();
@@ -293,7 +265,9 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			transacao.put( "porta", nroPorta );
 			
 			dos.writeUTF( transacao.toString() );
-			//controller.FileReceiver receiver = new controller.FileReceiver();
+			
+			Socket socketArquivo = new Socket( socket.getInetAddress(), nroPorta );
+			new controller.FileReceiver( socketArquivo, tamanho, "C:/temp", TelaPrincipal.tlachat);
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
@@ -318,66 +292,6 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 		
-	
-	private void iniciaServidorArquivo( int porta ){
-			
-			if( servidorArquivo == null ) {
-				try {
-					
-					servidorArquivo = new controller.ServidorDeSockets( porta, this );
-					servidorArquivo.start();
-					
-					FileInputStream fis = null;
-					
-					File arquivo = fc.getSelectedFile();
-					String nomeArquivo = arquivo.getName();
-					String tmpdir = System.getProperty("java.io.tmpdir");
-					
-					System.out.println("nome do arquivo: " + nomeArquivo);
-					System.out.println("nome do arquivo: " + tmpdir);
-					
-					byte[] bFile = new byte[(int) arquivo.length()];
-					 
-					try {
-
-						fis = new FileInputStream(arquivo);
-						fis.read(bFile);
-						fis.close();
-
-						
-						FileOutputStream fileOuputStream = 
-						new FileOutputStream(tmpdir + nomeArquivo); 
-						fileOuputStream.write(bFile);
-						fileOuputStream.close();
-
-						System.out.println("enviar cod 7 - confirma");
-						}catch(Exception e){
-							e.printStackTrace();
-						}
-					
-					
-	
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-			} else {
-				
-				servidorArquivo.finaliza();
-				servidorArquivo = null;
-	
-			}
-			
-		}
-	
-	public void finalizaServidorArquivo() {
-			continua = false;
-			try {
-				serverSoketArquivo.close();
-			} catch (IOException e) {
-			}
-	}
 	
 	private class Recebedor extends Thread {
 
@@ -472,7 +386,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							areaChat.setText( areaChat.getText() + "\n" + contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)");
 							if (JOptionPane.showConfirmDialog(null, contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)", "Solicitação de envio de arquivo",
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-								aceitaEnvioArquivo();
+								
+								aceitaEnvioArquivo( objRecebido.getInt("tamanho") );
 								areaChat.setText( areaChat.getText() + "\nVocê aceitou o envio de arquivo.");
 								
 							} else {
@@ -484,7 +399,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						else if (cod == 5){
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
-							//recebe o número da porta e envia o arquivo
+							new controller.FileSender( socket.getInetAddress().toString(), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							
 						}
 						//Envio de arquivo recusado.
