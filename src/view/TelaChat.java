@@ -132,11 +132,11 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	                			solicitacao.put("cod", 4);
 	                			solicitacao.put("nomeArquivo",arquivo.getName());
 	                			
-	                			int tamanhoArquivo = (int)(long)(arquivo.length());
+	                			long tamanhoArquivo = (long) arquivo.length();
 	                			
 	                			solicitacao.put("tamanho", tamanhoArquivo);
 	                			
-	                			areaChat.setText( areaChat.getText() + "\nSolicitação de transferência de arquivo enviada.\nArquivo: " + arquivo.getName() + " (" + tamanhoArquivo + "KB)");
+	                			areaChat.setText( areaChat.getText() + "\nSolicitação de transferência de arquivo enviada.\nArquivo: " + arquivo.getName() + " (" + arquivo.length() + "B)");
 	                			txtMensagem.setText( "" );
 	                			txtMensagem.requestFocusInWindow();
 	                			
@@ -252,7 +252,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 	
-	private void aceitaEnvioArquivo(int tamanho){
+	private void aceitaEnvioArquivo(long tamanho){
 
 		try {
 			OutputStream os = socket.getOutputStream();
@@ -267,7 +267,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			dos.writeUTF( transacao.toString() );
 			
 			Socket socketArquivo = new Socket( socket.getInetAddress(), nroPorta );
-			new controller.FileReceiver( socketArquivo, tamanho, "C:/temp", TelaPrincipal.tlachat);
+			new controller.FileReceiver( socketArquivo, (int)tamanho, "C:/temp", TelaPrincipal.tlachat);
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
@@ -383,11 +383,11 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						}
 						//Requisição de envio de arquivo.
 						else if (cod == 4){
-							areaChat.setText( areaChat.getText() + "\n" + contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)");
-							if (JOptionPane.showConfirmDialog(null, contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getInt("tamanho") + "KB)", "Solicitação de envio de arquivo",
+							areaChat.setText( areaChat.getText() + "\n" + contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getLong("tamanho") + "B)");
+							if (JOptionPane.showConfirmDialog(null, contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getLong("tamanho") + "B)", "Solicitação de envio de arquivo",
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 								
-								aceitaEnvioArquivo( objRecebido.getInt("tamanho") );
+								aceitaEnvioArquivo( objRecebido.getLong("tamanho") );
 								areaChat.setText( areaChat.getText() + "\nVocê aceitou o envio de arquivo.");
 								
 							} else {
