@@ -132,7 +132,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	                			solicitacao.put("cod", 4);
 	                			solicitacao.put("nomeArquivo",arquivo.getName());
 	                			
-	                			int tamanhoArquivo = (int)(long)(arquivo.length()/1024);
+	                			int tamanhoArquivo = (int)(long)(arquivo.length());
 	                			
 	                			solicitacao.put("tamanho", tamanhoArquivo);
 	                			
@@ -399,7 +399,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						else if (cod == 5){
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
-							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 1024 bytes, melhor criar um método.
+							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 4096 bytes, melhor criar um método.
+							//Mandar por aqui os primeiros 4096 bytes, depois disso tem que receber um cód 7 para ir mandando os próximos.
 							new controller.FileSender( socket.getInetAddress().toString(), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							
 						}
@@ -412,14 +413,15 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						//Sucesso no envio de arquivo.
 						else if (cod == 7){
 							
-							areaChat.setText( areaChat.getText() + "\n Arquivo enviado." );
+							//areaChat.setText( areaChat.getText() + "\n Arquivo enviado." );
+							//Daria pra botar até um ProgressBar nessa birosca.
 							
 						}
 						//Erro no envio de arquivo.
 						else if (cod == 8){
 							
-							areaChat.setText( areaChat.getText() + "\n Ocorreu um erro no envio do arquivo." );
-							//Ver o que fazer para enviar novamente.
+							//Tentar de novo, caso de erro, cancelar.
+							areaChat.setText( areaChat.getText() + "\n Ocorreu um erro no envio do arquivo e o mesmo foi cancelado." );
 							
 						}
 					}
@@ -521,25 +523,40 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 
 	@Override
 	public void onFinishReceiveFile(String fileName) {
-		// TODO Auto-generated method stub
+		
+		JSONObject posicao = new JSONObject();
+		
+		try {
+			
+			posicao.put( "cod", 7);
+			enviaPeloSocket( posicao.toString() );
+			
+		} catch (JSONException e1) {
+			
+		}
 		
 	}
 
 	@Override
 	public void onErrorSendFile(Exception e) {
-		// TODO Auto-generated method stub
+		
 		
 	}
 
 	@Override
 	public void onErrorReceiveFile(Exception e) {
-		// TODO Auto-generated method stub
+		
+		JSONObject posicao = new JSONObject();
+		
+		try {
+			
+			posicao.put( "cod", 8);
+			enviaPeloSocket( posicao.toString() );
+			
+		} catch (JSONException e1) {
+			
+		}
 		
 	}
 	
-	/*
-	public static void main(String[] args) {
-		new TelaChat(new Socket(), "teste", new JLabel(""));
-	}
-	*/
 }
