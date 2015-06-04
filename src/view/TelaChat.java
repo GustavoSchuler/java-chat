@@ -399,6 +399,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						else if (cod == 5){
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
+							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 1024 bytes, melhor criar um método.
 							new controller.FileSender( socket.getInetAddress().toString(), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							
 						}
