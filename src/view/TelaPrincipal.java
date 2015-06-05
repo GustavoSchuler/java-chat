@@ -94,7 +94,7 @@ public class TelaPrincipal extends JFrame implements ActionListener, controller.
 		
 		txtEndereco = new JTextField();
 		txtEndereco.setBounds( 25, 280, 150, 25 );
-		txtEndereco.setText( "10.1.0.67" );
+		txtEndereco.setText( "192.168.25.5" );
 		
 		container.add( txtEndereco );
 		

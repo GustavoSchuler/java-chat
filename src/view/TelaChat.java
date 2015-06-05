@@ -258,7 +258,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			OutputStream os = socket.getOutputStream();
 			DataOutputStream dos = new DataOutputStream( os );
 
-			int nroPorta = 64000;
+			int nroPorta = 1752;
 			
 			JSONObject transacao = new JSONObject();
 			transacao.put( "cod", 5 );
@@ -266,7 +266,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			
 			dos.writeUTF( transacao.toString() );
 			
-			Socket socketArquivo = new Socket( socket.getInetAddress(), nroPorta );
+			Socket socketArquivo = new Socket( socket.getInetAddress().toString().substring(1), nroPorta );
 			new controller.FileReceiver( socketArquivo, (int)tamanho, "C:/temp", TelaPrincipal.tlachat);
 			
 		} catch (Exception e) {
@@ -401,7 +401,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
 							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 4096 bytes, melhor criar um método.
 							//Mandar por aqui os primeiros 4096 bytes, depois disso tem que receber um cód 7 para ir mandando os próximos.
-							new controller.FileSender( socket.getInetAddress().toString(), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
+							new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							
 						}
 						//Envio de arquivo recusado.
