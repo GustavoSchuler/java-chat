@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 public class TelaChat extends JFrame implements WindowListener, controller.EventosDoServidorDeSockets, controller.IFileDownloadHandler {
 	
+	private controller.ServidorDeSockets servidorArquivo;
 	private Socket socket;
 	private String usuario, contato;
 	private String fotoPadrao = "/view/images/chat-icon.png";
@@ -255,10 +256,13 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	private void aceitaEnvioArquivo(long tamanho){
 
 		try {
+			
+			
 			OutputStream os = socket.getOutputStream();
 			DataOutputStream dos = new DataOutputStream( os );
 
 			int nroPorta = 1752;
+			iniciaServidorArquivo( nroPorta );
 			
 			JSONObject transacao = new JSONObject();
 			transacao.put( "cod", 5 );
@@ -399,6 +403,9 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 						else if (cod == 5){
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
+								
+							iniciaServidorArquivo( objRecebido.getInt("porta") );
+							
 							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 4096 bytes, melhor criar um método.
 							//Mandar por aqui os primeiros 4096 bytes, depois disso tem que receber um cód 7 para ir mandando os próximos.
 							new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
@@ -432,7 +439,31 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 
-
+		
+	private void iniciaServidorArquivo(int nroPorta){
+		
+		if( servidorArquivo == null ) {
+			
+			try {
+				
+				servidorArquivo = new controller.ServidorDeSockets( nroPorta, this );
+				servidorArquivo.start();
+				
+			} catch (IOException e1) {
+				
+				e1.printStackTrace();
+				
+			}
+			
+		} else {
+			
+			servidorArquivo.finaliza();
+			servidorArquivo = null;
+			
+		}
+		
+	}
+		
 	@Override
 	public void windowOpened(WindowEvent e) {
 		// TODO Auto-generated method stub
