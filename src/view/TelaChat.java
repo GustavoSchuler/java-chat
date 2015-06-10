@@ -580,7 +580,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 
 	@Override
 	public void onFinishSendFile(String fileName) {
-		// TODO Auto-generated method stub
+		
+		
 		
 	}
 
