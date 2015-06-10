@@ -31,6 +31,8 @@ import javax.swing.JTextArea;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import controller.EventosDoServidorDeSockets;
+
 
 public class TelaChat extends JFrame implements WindowListener, controller.EventosDoServidorDeSockets, controller.IFileDownloadHandler {
 	
@@ -44,6 +46,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	private JFileChooser fc;
 	private Recebedor recebedor;
 	private File arquivo;
+	private long tamanho;
 	
 	public TelaChat(Socket s, String titulo, JLabel foto) {
 		
@@ -270,8 +273,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			
 			dos.writeUTF( transacao.toString() );
 			
-			Socket socketArquivo = new Socket( socket.getInetAddress().toString().substring(1), nroPorta );
-			new controller.FileReceiver( socketArquivo, (int)tamanho, "C:/temp", TelaPrincipal.tlachat);
+			//Socket socketArquivo = new Socket( socket.getInetAddress().toString().substring(1), nroPorta );
+			
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
@@ -391,7 +394,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							if (JOptionPane.showConfirmDialog(null, contato + " quer enviar um arquivo." + "\nArquivo: " + objRecebido.getString("nomeArquivo") + " (" + objRecebido.getLong("tamanho") + "B)", "Solicitação de envio de arquivo",
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 								
-								aceitaEnvioArquivo( objRecebido.getLong("tamanho") );
+								tamanho = objRecebido.getLong("tamanho");
+								aceitaEnvioArquivo( tamanho );
 								areaChat.setText( areaChat.getText() + "\nVocê aceitou o envio de arquivo.");
 								
 							} else {
@@ -404,11 +408,12 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
 								
-							iniciaServidorArquivo( objRecebido.getInt("porta") );
+							//iniciaServidorArquivo( objRecebido.getInt("porta") );
 							
 							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 4096 bytes, melhor criar um método.
 							//Mandar por aqui os primeiros 4096 bytes, depois disso tem que receber um cód 7 para ir mandando os próximos.
-							new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
+							controller.FileSender sender = new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
+							sender.start();
 							
 						}
 						//Envio de arquivo recusado.
@@ -446,7 +451,34 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			
 			try {
 				
-				servidorArquivo = new controller.ServidorDeSockets( nroPorta, this );
+				servidorArquivo = new controller.ServidorDeSockets( nroPorta, new EventosDoServidorDeSockets() {
+					
+					@Override
+					public void reportDeErro(IOException e) throws JSONException {
+						// TODO Auto-generated method stub
+						
+					}
+					
+					@Override
+					public void aoReceberSocket(Socket s) throws JSONException {
+					
+						controller.FileReceiver receiver = new controller.FileReceiver( s, (int)tamanho, "C:/temp", TelaPrincipal.tlachat);
+						receiver.start();
+						
+					}
+					
+					@Override
+					public void aoIniciarServidor() throws JSONException {
+						// TODO Auto-generated method stub
+						
+					}
+					
+					@Override
+					public void aoFinalizarServidor() throws JSONException {
+						// TODO Auto-generated method stub
+						
+					}
+				} );
 				servidorArquivo.start();
 				
 			} catch (IOException e1) {
