@@ -273,7 +273,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 				
 				String filePathToSave = folderChooser.getSelectedFile().getAbsolutePath() + "\\" + nomeArquivo;	
 				
-				int nroPorta = 1752;
+				int nroPorta = 1765;
 				
 				JSONObject transacao = new JSONObject();
 				transacao.put( "cod", 5 );
