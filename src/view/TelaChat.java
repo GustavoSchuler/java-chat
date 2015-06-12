@@ -256,7 +256,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 	
-	private void aceitaEnvioArquivo(long tamanho){
+	private void aceitaEnvioArquivo(long tamanho, String nomeArquivo){
 
 		try {
 			
@@ -264,17 +264,31 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			OutputStream os = socket.getOutputStream();
 			DataOutputStream dos = new DataOutputStream( os );
 
-			int nroPorta = 1752;
-			iniciaServidorArquivo( nroPorta );
+			JFileChooser folderChooser = new JFileChooser(System.getProperty("user.home"));
+			folderChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY);
 			
-			JSONObject transacao = new JSONObject();
-			transacao.put( "cod", 5 );
-			transacao.put( "porta", nroPorta );
+			int resFolder = folderChooser.showOpenDialog(folderChooser);
 			
-			dos.writeUTF( transacao.toString() );
-			
-			//Socket socketArquivo = new Socket( socket.getInetAddress().toString().substring(1), nroPorta );
-			
+			if (resFolder == JFileChooser.APPROVE_OPTION) {
+				
+				String filePathToSave = folderChooser.getSelectedFile().getAbsolutePath() + "\\" + nomeArquivo;	
+				
+				int nroPorta = 1752;
+				
+				JSONObject transacao = new JSONObject();
+				transacao.put( "cod", 5 );
+				transacao.put( "porta", nroPorta );
+						
+				ServerSocket newSocket = new ServerSocket(nroPorta);
+				
+				dos.writeUTF( transacao.toString() );
+				
+				Socket fileSocket = newSocket.accept();
+				newSocket.close();
+				
+				controller.FileReceiver fileReceiver = new controller.FileReceiver(fileSocket, (int)tamanho, filePathToSave, this);
+				fileReceiver.start();
+			}
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog( this, "Não foi possível atender sua requisição: " + e.getMessage() );
@@ -395,7 +409,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 								
 								tamanho = objRecebido.getLong("tamanho");
-								aceitaEnvioArquivo( tamanho );
+								String nomeArquivo = objRecebido.getString("nomeArquivo");
+								aceitaEnvioArquivo( tamanho, nomeArquivo );
 								areaChat.setText( areaChat.getText() + "\nVocê aceitou o envio de arquivo.");
 								
 							} else {
@@ -408,10 +423,6 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
 								
-							//iniciaServidorArquivo( objRecebido.getInt("porta") );
-							
-							//Antes de instanciar o FilSender tem que ir separando o arquivo em pedaços de 4096 bytes, melhor criar um método.
-							//Mandar por aqui os primeiros 4096 bytes, depois disso tem que receber um cód 7 para ir mandando os próximos.
 							controller.FileSender sender = new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							sender.start();
 							
@@ -444,57 +455,6 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 		}
 	}
 
-		
-	private void iniciaServidorArquivo(int nroPorta){
-		
-		if( servidorArquivo == null ) {
-			
-			try {
-				
-				servidorArquivo = new controller.ServidorDeSockets( nroPorta, new EventosDoServidorDeSockets() {
-					
-					@Override
-					public void reportDeErro(IOException e) throws JSONException {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void aoReceberSocket(Socket s) throws JSONException {
-					
-						controller.FileReceiver receiver = new controller.FileReceiver( s, (int)tamanho, "C:/temp", TelaPrincipal.tlachat);
-						receiver.start();
-						
-					}
-					
-					@Override
-					public void aoIniciarServidor() throws JSONException {
-						// TODO Auto-generated method stub
-						
-					}
-					
-					@Override
-					public void aoFinalizarServidor() throws JSONException {
-						// TODO Auto-generated method stub
-						
-					}
-				} );
-				servidorArquivo.start();
-				
-			} catch (IOException e1) {
-				
-				e1.printStackTrace();
-				
-			}
-			
-		} else {
-			
-			servidorArquivo.finaliza();
-			servidorArquivo = null;
-			
-		}
-		
-	}
 		
 	@Override
 	public void windowOpened(WindowEvent e) {
@@ -581,7 +541,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 	@Override
 	public void onFinishSendFile(String fileName) {
 		
-		
+		areaChat.setText( areaChat.getText() + "/nArquivo enviado." );
 		
 	}
 
@@ -594,6 +554,7 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 			
 			posicao.put( "cod", 7);
 			enviaPeloSocket( posicao.toString() );
+			areaChat.setText( areaChat.getText() + "/nArquivo recebido." );
 			
 		} catch (JSONException e1) {
 			
