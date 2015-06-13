@@ -1,5 +1,6 @@
 package controller;
 
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,15 +11,23 @@ import java.net.Socket;
 public class FileSender extends Thread {
 
 	private String _hostAddress;
-	private int _port;
-	private String _filePathToSend;
-	private IFileDownloadHandler _fileDownloadHandler;
+	private int port;
+	private String path;
+	private IFileDownloadHandler fileTransferHandler;
 	
-	public FileSender(String hostAddress, int port, String filePathToSend, IFileDownloadHandler fileDownloadHandler) {
+	/**
+	 * Construtor da classe
+	 * 
+	 * @param hostAddress
+	 * @param newPort
+	 * @param pathToSend
+	 * @param handler
+	 */
+	public FileSender(String hostAddress, int newPort, String pathToSend, IFileDownloadHandler handler) {
 		_hostAddress = hostAddress;
-		_port = port;
-		_filePathToSend = filePathToSend;
-		_fileDownloadHandler = fileDownloadHandler;
+		port = newPort;
+		path = pathToSend;
+		fileTransferHandler = handler;
 	}
 	
 	
@@ -31,9 +40,9 @@ public class FileSender extends Thread {
 	    
 		try {
 			
-		    socket = new Socket(_hostAddress, _port);
+		    socket = new Socket(_hostAddress, port);
 			
-		    File myFile = new File(_filePathToSend);
+		    File myFile = new File(path);
 		    byte[] mybytearray = new byte[(int) myFile.length()];
 	         
 	        FileInputStream fis = new FileInputStream(myFile);
@@ -48,13 +57,13 @@ public class FileSender extends Thread {
 	         
 	        socket.close();
 
-	        _fileDownloadHandler.onFinishSendFile(_filePathToSend);
+	        fileTransferHandler.onFinishSendFile(path);
 		} catch (Exception e) {
 			e.printStackTrace();
-			_fileDownloadHandler.onErrorSendFile(e);
+			fileTransferHandler.onErrorSendFile(e);
 		}
+		
 		finally {
-			
 			try {
 				if (bis != null) bis.close();
 		        if (os != null) os.close();

@@ -1,5 +1,6 @@
 package controller;
 
+
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -9,16 +10,16 @@ import java.net.Socket;
 
 public class FileReceiver extends Thread {
 
-	private Socket _socket;
-	private int _fileSize;
-	private String _filePathToSave;
-	private IFileDownloadHandler _fileDonwloadHandler;
+	private Socket socket;
+	private int fileSize;
+	private String path;
+	private IFileDownloadHandler fileTransferHandler;
 	
-	public FileReceiver(Socket socket, int fileSize, String filePathToSave, IFileDownloadHandler fileDonwloadHandler) {
-		_socket = socket;
-		_fileSize = fileSize;
-		_filePathToSave = filePathToSave;
-		_fileDonwloadHandler = fileDonwloadHandler;
+	public FileReceiver(Socket so, int size, String pathToSave, IFileDownloadHandler handler) {
+		socket = so;
+		fileSize = size;
+		path = pathToSave;
+		fileTransferHandler = handler;
 	}
 	
 	@Override
@@ -29,31 +30,26 @@ public class FileReceiver extends Thread {
 	    OutputStream output = null;
 	    
 	    try {
-	      
-	        // receive file
-	    	InputStream in = _socket.getInputStream();
-	         
-	        // Writing the file to disk
-	        // Instantiating a new output stream object
-	        output = new FileOutputStream(_filePathToSave);
+	    	InputStream in = socket.getInputStream();
+	        output = new FileOutputStream(path);
 	           
 	        byte[] buffer = new byte[1024];
 	        while ((bytesRead = in.read(buffer)) != -1) {
 	            output.write(buffer, 0, bytesRead);
 	        }
 	        
-	      _fileDonwloadHandler.onFinishReceiveFile(_filePathToSave);
+	        fileTransferHandler.onFinishReceiveFile(path);
 	    }
 	    catch(Exception e) {
 	    	e.printStackTrace();
-	    	_fileDonwloadHandler.onErrorReceiveFile(e);
+	    	fileTransferHandler.onErrorReceiveFile(e);
 	    }
 	    finally {
 		    try {
 		    	if (output != null) output.close();
 		    	if (fos != null) fos.close();
 			    if (bos != null) bos.close();
-			    if (_socket != null) _socket.close();
+			    if (socket != null) socket.close();
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
