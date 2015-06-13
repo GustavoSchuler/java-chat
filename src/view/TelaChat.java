@@ -423,7 +423,8 @@ public class TelaChat extends JFrame implements WindowListener, controller.Event
 							
 							areaChat.setText( areaChat.getText() + "\n O envio do arquivo foi aceito por " + contato + "." );
 								
-							controller.FileSender sender = new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
+							//controller.FileSender sender = new controller.FileSender( socket.getInetAddress().toString().substring(1), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
+							controller.FileSender sender = new controller.FileSender( socket.getInetAddress().getHostAddress(), objRecebido.getInt("porta"), arquivo.getAbsolutePath(), view.TelaPrincipal.tlachat);
 							sender.start();
 							
 						}
